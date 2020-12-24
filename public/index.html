@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket Server</title>
+</head>
+<body>
+    <h1>Acceso denegado</h1>
+    <script src="socket.io/socket.io.js"></script>
+    <button onclick="crearBanda()">Crear Banda</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th> 
+                <th>Name</th>
+                <th>Votes</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</body>
+<footer>
+    <script>
+        var client = io();
+        client.on('connect',function(){
+            console.log("Conectado al servidor");
+        });  
+        client.on('disconnect',function(){
+            console.log("Perdimos conexion con el servidor");
+        });
+        
+        client.on('active-bands',function(payload){  
+            generateTable(payload.bands);
+        });
+
+        function crearBanda() {
+            var band = prompt("Nombre de la banda");
+            if (band != null) {
+                client.emit('add-band',{name: band});
+            }
+        }
+
+        function generateTable(data) {
+            let table = document.querySelector("tbody");
+            table.innerHTML = '';
+            for (let element of data) {
+                let row = table.insertRow();
+                for (key in element) {
+                    let cell = row.insertCell();
+                    let text = document.createTextNode(element[key]);
+                    let someDiv = document.createElement('div');
+                    someDiv.append(text);
+                    cell.appendChild(someDiv);
+                    someDiv.addEventListener('click', function(id){
+                        console.log(id.target)      
+                    });
+                }
+
+                var btn = document.createElement('input');
+                btn.type = "button";
+                btn.className = "btn";
+                btn.value = 'Votar';
+                btn.onclick = function(){
+                    console.log('vote-band')
+                    client.emit('vote-band',{id: element['id']});
+                };
+                row.appendChild(btn);
+
+                var btn = document.createElement('input');
+                btn.type = "button";
+                btn.className = "btn";
+                btn.value = 'Borrar';
+                btn.onclick = function(){
+                    client.emit('delete-band',{id: element['id']});
+                };
+                row.appendChild(btn);
+            }
+         
+        }
+
+        
+    </script>
+</footer>
+</html>
