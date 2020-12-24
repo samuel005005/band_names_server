@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "author": "Samuel Paez <samuel005005@gmail.com>",
   "license": "MIT",
-  "type": "module",
   "scripts": {
     "start": "node index.js",
     "start:dev": "nodemon index.js"
