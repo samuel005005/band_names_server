@@ -1,36 +1,24 @@
-const Bands = require( "../models/bands");
-const Band = require( "../models/band");
-
-const bands = new Bands();
-
-bands.addBand(new Band('Tercer Cielo'));
-bands.addBand(new Band('Barak'));
-bands.addBand(new Band('Aposento Alto'));
-bands.addBand(new Band('Redimi2'));
-bands.addBand(new Band('Ariel Kelly'));
-
-console.log('init Server');
+const { comprobarJWT } = require('../helpers/jwt');
+const { usuarioConectado , usuarioDesconectado } = require('../controllers/socket');
 
 module.exports = (io, app) => {
 
-  io.on("connection", socket => {
-    socket.address =
-      socket.handshake.address !== null
-        ? socket.handshake.address
-        : process.env.DOMAIN;
+  io.on("connection", client => {
 
-    socket.connectedAt = new Date();
+    const [valid , uid] =  comprobarJWT(client.handshake.headers['x-token']);
 
-    console.info(`[%s] Cliente Conectado ${socket.id}`, socket.address);
+    if(!valid) { return client.disconnect(); }
+
+    usuarioConectado(uid);
+    console.info(`Cliente Conectado ${uid}`);
     // Call onDisconnect.
-    socket.on("disconnect", function() {
-      console.info("Perdimos conexion con el cliente", socket.address);
+    client.on("disconnect", function() {
+      usuarioDesconectado(uid);
+      console.info(`Cliente desconectado ${uid}`);
     });
-
-    require("./events")(io,socket, bands);
 
   });
 
-  // Register socket.io in a global variable
+  // Register client.io in a global variable
   app.locals.io = io;
 };
