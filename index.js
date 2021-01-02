@@ -17,14 +17,13 @@ const publicPath = path.resolve( __dirname, 'public');
 app.use(express.static(publicPath));
 
 // Mis Rutas
-app.use('/api/user',require('./routes/auth'));
-
+require('./routes/index')(app);
 // Node server
 const server = http.createServer(app);
 server.listen(process.env.PORT);
 
 server.on("listening", onListening);
-
+    
 const io = require("socket.io")(server);
 
 require("./socket/socket")(io, app);

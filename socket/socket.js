@@ -10,6 +10,12 @@ module.exports = (io, app) => {
     if(!valid) { return client.disconnect(); }
 
     usuarioConectado(uid);
+
+    //Ingresar al usuario a una sala en particular
+    //sala global , client.id , uid sala
+
+    require('./events')(io,client,uid);
+
     console.info(`Cliente Conectado ${uid}`);
     // Call onDisconnect.
     client.on("disconnect", function() {

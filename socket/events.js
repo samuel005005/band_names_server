@@ -1,27 +1,14 @@
-const Band = require( "../models/band");
+const { saveMessage } =  require('../controllers/socket');
 
-module.exports = (io , socket , bands) => {
+const events = (io , client , uid) => {
 
-    socket.emit('active-bands', {bands: bands.getBands()});
-    
-    socket.on("message", (payload) => {
-        socket.broadcast.emit("message", payload);
-        console.log('Received message',payload);
-    });
-    socket.on("vote-band", (payload) => {
-        bands.voteBand(payload['id']);
-        io.emit('active-bands', {bands: bands.getBands()});
-    }); 
+    client.join(uid); /// Crea una sala
 
-    socket.on("add-band", (payload) => {
-        console.log('add-band',payload);
-        bands.addBand(new Band(payload['name']));
-        io.emit('active-bands', {bands: bands.getBands()});
-    });
-
-    socket.on("delete-band", (payload) => {
-        console.log('add-band',payload);
-        bands.deleteBand(payload['id']);
-        io.emit('active-bands', {bands: bands.getBands()});
+    client.on('mensaje-personal', async (payload) => {  
+        // To == Envia a una Sala
+        await saveMessage( payload );
+        io.to(payload.To).emit('mensaje-personal',payload);
     });
 }
+
+module.exports = events;
